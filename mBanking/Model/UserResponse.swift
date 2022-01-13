@@ -1,17 +1,17 @@
 //
-//  User.swift
+//  UserResponse.swift
 //  mBanking
 //
 //  Created by Borna Ungar on 12.01.2022..
 //
 
 import Foundation
-struct User: Codable {
+struct UserResponse: Codable {
     let id: String
     let accounts: [Account]
     
     enum CodingKeys: String, CodingKey{
-        case id = "user_id" // userId if .convertFromSnakeCase
+        case id = "userId" // user_id if without .convertFromSnakeCase
         case accounts = "acounts"
     }
 }

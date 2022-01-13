@@ -14,8 +14,20 @@ class AccountsViewController: UIViewController {
     
     let disposeBag = DisposeBag()
     
+    let dialogView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }()
+    
+    let progressView: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView(style: .large)
+        return view
+    }()
+    
     let tableView: UITableView = {
         let tv = UITableView()
+        tv.backgroundColor = .clear
         return tv
     }()
     
@@ -33,30 +45,81 @@ class AccountsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        setupTableView()
         initializeVM()
+        viewModel.accountsRelay.accept(viewModel.accounts)
     }
 }
 
 private extension AccountsViewController {
 
     func setupUI() {
-        view.backgroundColor = .black.withAlphaComponent(0.3)
+        view.backgroundColor = .black.withAlphaComponent(0.5)
         modalTransitionStyle = .crossDissolve
         
-        view.addSubviews(views: tableView)
+        view.addSubview(dialogView)
+        dialogView.addSubviews(views: tableView, progressView)
+        view.bringSubviewToFront(progressView)
         setupConstraints()
     }
     
     func setupConstraints() {
         
+        dialogView.snp.makeConstraints{ (make) -> Void in
+            make.top.equalToSuperview().offset(100)
+            make.leading.equalToSuperview().offset(50)
+            make.bottom.equalToSuperview().offset(-100)
+            make.trailing.equalToSuperview().offset(-50)
+        }
+        
+        progressView.snp.makeConstraints{ (make) -> Void in
+            make.centerX.centerY.equalToSuperview()
+        }
+        
         tableView.snp.makeConstraints{ (make) -> Void in
-            make.edges.equalToSuperview().offset(50)
+            make.edges.equalToSuperview()
         }
     }
     
+    func setupTableView() {
+        registerCells()
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
+    
+    func registerCells() {
+        tableView.register(AccountsTableViewCell.self, forCellReuseIdentifier: "accountsTableViewCell")
+    }
+    
     func initializeVM() {
-        disposeBag.insert(self.viewModel.initializeViewModelObservables())
+
+        initializeLoaderObservable(subject: viewModel.loaderSubject).disposed(by: disposeBag)
+        initializeAccountDataObservable(subject: viewModel.accountsRelay).disposed(by: disposeBag)
 //        initializeDialogDismiss(subject: viewModel.dismissSubject).disposed(by: disposeBag)
+    }
+    
+    func initializeLoaderObservable(subject: ReplaySubject<Bool>) -> Disposable {
+        return subject
+            .observe(on: MainScheduler.instance)
+            .subscribe(on: ConcurrentDispatchQueueScheduler.init(qos: .background))
+            .subscribe(onNext: { [unowned self] (status) in
+                if status {
+                    showLoader()
+                } else {
+                    hideLoader()
+                }
+            })
+    }
+    
+    func initializeAccountDataObservable(subject: BehaviorRelay<[Account]>) -> Disposable {
+        return subject
+            .observe(on: MainScheduler.instance)
+            .subscribe(on: ConcurrentDispatchQueueScheduler.init(qos: .background))
+            .subscribe(onNext: { [unowned self] (accounts) in
+                if !accounts.isEmpty {
+                    tableView.reloadData()
+                }
+            })
     }
     
 //    func initializeDialogDismiss(subject: ReplaySubject<()>) -> Disposable {
@@ -68,7 +131,54 @@ private extension AccountsViewController {
 //                    self.delegate?.successfulLogin(true)
 //                })
 //            })
-//        
+//
 //    }
     
 }
+
+extension AccountsViewController: UITableViewDataSource, UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return viewModel.accountsRelay.value.count
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 80
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let accountCell = tableView.dequeueReusableCell(withIdentifier: "accountsTableViewCell", for: indexPath) as? AccountsTableViewCell else {
+            print("failed to dequeue the wanted cell")
+            return UITableViewCell()
+        }
+        
+        let account = viewModel.accountsRelay.value[indexPath.row]
+        
+        accountCell.configureCell(id: account.id, iban: account.iban, amount: account.amount)
+        
+        return accountCell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        // bring back to overview
+    }
+}
+
+extension AccountsViewController {
+    
+    func showLoader() {
+        progressView.isHidden = false
+        progressView.startAnimating()
+    }
+    
+    func hideLoader() {
+        progressView.isHidden = true
+        progressView.stopAnimating()
+    }
+}
+

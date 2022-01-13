@@ -6,3 +6,7 @@
 //
 
 import Foundation
+
+protocol LoginDelegate: AnyObject {
+    func successfulLogin(_ success: Bool)
+}

@@ -11,7 +11,8 @@ import RxSwift
 
 class PinDialogViewController: UIViewController {
     
-    let disposeBag: DisposeBag
+    let disposeBag = DisposeBag()
+    weak var delegate: LoginDelegate?
     
     let dialogView: UIView = {
         let view = UIView()
@@ -157,12 +158,15 @@ class PinDialogViewController: UIViewController {
     let buttonOK: UIButton = {
         let btn = UIButton()
         btn.setTitle("OK", for: .normal)
+        btn.isEnabled = false
+        btn.setTitleColor(.lightGray, for: .disabled)
+        btn.setTitleColor(.white, for: .normal)
         return btn
     }()
     
     let viewModel: PinDialogViewModel
-
-    init(viewModel: PinDialogViewModel) {
+    
+    init(viewModel: PinDialogViewModel){
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -171,11 +175,22 @@ class PinDialogViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        if(viewModel.userRegistered){
+            titleLabel.text = "Login"
+            pinTitleLabel.text = "Enter your pin code"
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         initializeButtons()
+        initializeVM()
     }
+}
+
+private extension PinDialogViewController {
     
     func setupUI() {
         view.backgroundColor = .black.withAlphaComponent(0.3)
@@ -256,31 +271,73 @@ class PinDialogViewController: UIViewController {
         numericButtons.forEach{ button in
             button.rx.tap
                 .subscribe( onNext: { [unowned self] _ in
-                    if let buttonText = button.titleLabel?.text {
+                    if let buttonText = button.titleLabel?.text, let pinCount = self.pinNumberTextField.text?.count, pinCount < 6 {
                         self.pinNumberTextField.text?.append(buttonText)
+                        buttonOK.isEnabled = minNumCheck()
                     }
                 }).disposed(by: disposeBag)
         }
         
         buttonCancel.rx.tap
             .subscribe( onNext: { [unowned self] _ in
+                if let fieldText = self.pinNumberTextField.text, !fieldText.isEmpty {
                     self.pinNumberTextField.text?.removeLast()
+                    buttonOK.isEnabled = minNumCheck()
+                }
+            }).disposed(by: disposeBag)
+        
+        buttonOK.rx.tap
+            .subscribe( onNext: { [unowned self] _ in
+                if let fieldText = self.pinNumberTextField.text {
+                    self.viewModel.userPinSubject.onNext(fieldText)
+                }
             }).disposed(by: disposeBag)
     }
-}
-
-extension PinDialogViewController: UITextFieldDelegate {
     
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        
-        let currentText = textField.text ?? ""
-        
-        guard let stringRange = Range(range, in: currentText) else {return false}
-        
-        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
-        
-        return updatedText.count <= 6
+    func initializeVM() {
+        disposeBag.insert(self.viewModel.initializeViewModelObservables())
+        initializePinVerificationObservable(subject: viewModel.pinVerificationSubject).disposed(by: disposeBag)
+        initializeDialogDismiss(subject: viewModel.dismissSubject).disposed(by: disposeBag)
+    }
+    
+    func initializePinVerificationObservable(subject: ReplaySubject<Verification>) -> Disposable {
+        return subject
+            .observe(on: MainScheduler.instance)
+            .subscribe(on: ConcurrentDispatchQueueScheduler.init(qos: .background))
+            .subscribe(onNext: { [unowned self] (verification) in
+                print(verification)
+                switch verification {
+                case .login:
+                    pinNumberTextField.text?.removeAll()
+                    self.viewModel.dismissSubject.onNext(())
+                case .register:
+                    showInfoAlert(alertText: "Registered", alertMessage: "You're now registered. You'll have to use the same user info and pin code from now on.", handler: { [unowned self] _ in
+                        pinNumberTextField.text?.removeAll()
+                        self.viewModel.dismissSubject.onNext(())
+                    })
+                case .failure:
+                    showInfoAlert(alertText: "Wrong pin code", alertMessage: "You've entered the wrong pin. Try again.")
+                    pinNumberTextField.text?.removeAll()
+                }
+            })
+    }
+    
+    func initializeDialogDismiss(subject: ReplaySubject<()>) -> Disposable {
+        return subject
+            .observe(on: MainScheduler.instance)
+            .subscribe(on: ConcurrentDispatchQueueScheduler.init(qos: .background))
+            .subscribe(onNext: { [unowned self] _ in
+                dismiss(animated: true, completion: {
+                    self.delegate?.successfulLogin(true)
+                })
+            })
         
     }
     
+    func minNumCheck() -> Bool {
+        if let charCount = self.pinNumberTextField.text?.count{
+            return charCount > 3
+        }
+        return false
+    }
 }

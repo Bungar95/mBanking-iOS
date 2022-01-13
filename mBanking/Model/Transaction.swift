@@ -6,3 +6,10 @@
 //
 
 import Foundation
+struct Transaction: Codable {
+    let id: String
+    let date: String
+    let description: String
+    let amount: String
+    let type: String?
+}
