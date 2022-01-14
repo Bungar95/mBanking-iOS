@@ -24,5 +24,4 @@ class UserRepositoryImpl: UserRepository {
         let userResponseObservable: Observable<UserResponse> = networkManager.getData(from: url)
         return userResponseObservable
     }
-    
 }

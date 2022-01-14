@@ -38,7 +38,7 @@ class OverviewViewController: UIViewController {
     
     let transactionTableView: UITableView = {
         let view = UITableView()
-        view.backgroundColor = .lightGray
+        view.backgroundColor = .clear
         return view
     }()
     
@@ -63,9 +63,11 @@ class OverviewViewController: UIViewController {
     let changeAccountButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Change", for: .normal)
-        btn.setTitleColor(UIColor.systemCyan, for: .normal)
+        btn.setTitleColor(.systemCyan, for: .normal)
         btn.layer.borderWidth = 1
         btn.layer.borderColor = UIColor.lightGray.cgColor
+        btn.layer.cornerRadius = 5
+        btn.clipsToBounds = true
         return btn
     }()
     
@@ -85,10 +87,6 @@ class OverviewViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -102,6 +100,7 @@ class OverviewViewController: UIViewController {
 private extension OverviewViewController {
     
     func setupUI() {
+        navigationItem.titleView?.removeFromSuperview()
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: logoutButton)
         navigationItem.hidesBackButton = true
         logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
@@ -180,7 +179,9 @@ private extension OverviewViewController {
         
         changeAccountButton.rx.tap
             .subscribe( onNext: { [unowned self] _ in
-                self.navigationController?.present(AccountsViewController(viewModel: AccountsViewModelImpl(accounts: viewModel.userAccounts)), animated: true)
+                let dialogController = AccountsViewController(viewModel: AccountsViewModelImpl(accounts: viewModel.userAccounts))
+                dialogController.delegate = self
+                self.navigationController?.present(dialogController, animated: true)
             }).disposed(by: disposeBag)
         
     }
@@ -215,7 +216,7 @@ private extension OverviewViewController {
             })
     }
     
-    func initializeTransactionDataObservable(subject: BehaviorRelay<[Transaction]>) -> Disposable {
+    func initializeTransactionDataObservable(subject: BehaviorRelay<[[Transaction]]>) -> Disposable {
         return subject
             .observe(on: MainScheduler.instance)
             .subscribe(on: ConcurrentDispatchQueueScheduler.init(qos: .background))
@@ -235,12 +236,31 @@ private extension OverviewViewController {
 
 extension OverviewViewController: UITableViewDataSource, UITableViewDelegate {
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return viewModel.currentAccountTransactionsRelay.value.count
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return viewModel.currentAccountTransactionsRelay.value[section].count
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        let date = DateUtils.getDateOfDottedString(viewModel.currentAccountTransactionsRelay.value[section][0].date)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM yyyy"
+        let resultDate = dateFormatter.string(from: date)
+        return resultDate
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        let header = view as! UITableViewHeaderFooterView
+        header.tintColor = .systemCyan
+        header.textLabel?.textColor = .white
+        header.textLabel?.font = R.font.quicksandBold(size: 20)
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 25
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -253,7 +273,7 @@ extension OverviewViewController: UITableViewDataSource, UITableViewDelegate {
             return UITableViewCell()
         }
         
-        let transaction = viewModel.currentAccountTransactionsRelay.value[indexPath.row]
+        let transaction = viewModel.currentAccountTransactionsRelay.value[indexPath.section][indexPath.row]
         
         transactionCell.configureCell(description: transaction.description, date: transaction.date, amount: transaction.amount)
         
@@ -275,5 +295,11 @@ extension OverviewViewController {
     func hideLoader() {
         progressView.isHidden = true
         progressView.stopAnimating()
+    }
+}
+
+extension OverviewViewController: AccountDelegate {
+    func switchAccount(_ account: Account) {
+        viewModel.currentAccountSubject.onNext(account)
     }
 }

@@ -14,9 +14,22 @@ class LoginViewController: UIViewController{
     let disposeBag = DisposeBag()
     let dialogController = PinDialogViewController(viewModel: PinDialogViewModelImpl())
     
+    let imageView: UIImageView = {
+        let iv = UIImageView()
+        iv.image = UIImage(named: "login-background")
+        let overlay = UIView()
+        overlay.frame = .infinite
+        overlay.backgroundColor = .black
+        overlay.alpha = 0.1
+        iv.addSubview(overlay)
+        return iv
+    }()
+    
     let nameLabel: UILabel = {
         let label = UILabel()
         label.text = "Name"
+        label.textColor = .white
+        label.font = R.font.quicksandRegular(size: 20)
         return label
     }()
     
@@ -24,12 +37,16 @@ class LoginViewController: UIViewController{
         let txtField = UITextField()
         txtField.layer.borderWidth = 1
         txtField.setLeftPadding(5)
+        txtField.backgroundColor = .white.withAlphaComponent(0.5)
+        txtField.font = R.font.quicksandRegular(size: 20)
         return txtField
     }()
     
     let surnameLabel: UILabel = {
         let label = UILabel()
         label.text = "Surname"
+        label.textColor = .white
+        label.font = R.font.quicksandRegular(size: 20)
         return label
     }()
     
@@ -37,16 +54,28 @@ class LoginViewController: UIViewController{
         let txtField = UITextField()
         txtField.layer.borderWidth = 1
         txtField.setLeftPadding(5)
+        txtField.backgroundColor = .white.withAlphaComponent(0.5)
+        txtField.font = R.font.quicksandRegular(size: 20)
         return txtField
     }()
     
     let submitButton: UIButton = {
         let btn = UIButton()
-        btn.setTitle("Continue", for: .normal)
-        btn.setTitleColor(UIColor.systemRed, for: .disabled)
-        btn.setTitleColor(UIColor.systemCyan, for: .normal)
+        btn.setTitle("Register", for: .normal)
+        btn.setTitleColor(.white, for: .normal)
+        btn.backgroundColor = .lightGray
         btn.isEnabled = false
+        btn.layer.cornerRadius = 5
+        btn.clipsToBounds = true
         return btn
+    }()
+    
+    let loginUserLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = R.font.quicksandMedium(size: 24)
+        label.adjustsFontSizeToFitWidth = true
+        return label
     }()
     
     let viewModel: LoginViewModel
@@ -62,6 +91,7 @@ class LoginViewController: UIViewController{
     
     override func viewWillAppear(_ animated: Bool) {
         self.viewModel.checkUserRegistered()
+        loginOrRegister()
     }
     
     override func viewDidLoad() {
@@ -78,17 +108,34 @@ private extension LoginViewController {
     func setupUI(){
         self.hideKeyboardWhenTappedAround()
         view.backgroundColor = .white
-        view.addSubviews(views: nameLabel, nameTxtField, surnameLabel, surnameTxtField, submitButton)
+        view.addSubviews(views: imageView, nameLabel, nameTxtField, surnameLabel, surnameTxtField, submitButton)
         nameTxtField.delegate = self
         surnameTxtField.delegate = self
         
         setupConstraints()
     }
     
+    func loginOrRegister(){
+        if(viewModel.userRegistered){
+            loginUserLabel.text = "\(viewModel.userName) \(viewModel.userSurname),"
+            navigationItem.titleView = loginUserLabel
+            nameLabel.isHidden = true
+            surnameLabel.isHidden = true
+            nameTxtField.isHidden = true
+            surnameTxtField.isHidden = true
+            submitButton.isEnabled = true
+            submitButton.backgroundColor = .systemCyan
+            submitButton.setTitle("Login", for: .normal)
+        }
+    }
+    
     func setupConstraints() {
+        imageView.snp.makeConstraints{ (make) -> Void in
+            make.edges.equalToSuperview()
+        }
         
         nameLabel.snp.makeConstraints{ (make) -> Void in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(25)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
             make.leading.equalToSuperview().offset(25)
         }
         
@@ -99,7 +146,7 @@ private extension LoginViewController {
         }
         
         surnameLabel.snp.makeConstraints{ (make) -> Void in
-            make.top.equalTo(nameTxtField.snp.bottom).offset(25)
+            make.top.equalTo(nameTxtField.snp.bottom).offset(20)
             make.leading.equalToSuperview().offset(25)
         }
         
@@ -110,8 +157,10 @@ private extension LoginViewController {
         }
         
         submitButton.snp.makeConstraints{ (make) -> Void in
-            make.top.equalTo(surnameTxtField.snp.bottom).offset(50)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-25)
+            make.leading.equalToSuperview().offset(50)
             make.trailing.equalToSuperview().offset(-50)
+            make.height.equalTo(50)
         }
     }
     
@@ -119,10 +168,12 @@ private extension LoginViewController {
         
         submitButton.rx.tap
             .subscribe( onNext: { [unowned self] _ in
-                if let userName = nameTxtField.text, let userSurname = surnameTxtField.text {
-                    viewModel.userInfoSubject.onNext((userName, userSurname))
-                }else{
-                    //alert koji kaze da oba moraju biti popunjena
+                if (!viewModel.userRegistered) {
+                    if let userName = nameTxtField.text, let userSurname = surnameTxtField.text {
+                        viewModel.userInfoSubject.onNext((userName, userSurname))
+                    }
+                } else {
+                    viewModel.nameVerificationSubject.onNext(true)
                 }
             }).disposed(by: disposeBag)
         
@@ -133,8 +184,10 @@ private extension LoginViewController {
                     if let name = self.nameTxtField.text, let surname = self.surnameTxtField.text {
                         if (!name.isEmpty && !surname.isEmpty){
                             self.submitButton.isEnabled = true
+                            submitButton.backgroundColor = .systemCyan
                         }else{
                             self.submitButton.isEnabled = false
+                            submitButton.backgroundColor = .lightGray
                         }
                     }
                 })
@@ -155,11 +208,6 @@ private extension LoginViewController {
             .subscribe(onNext: { [unowned self] (verification) in
                 if verification {
                     self.present(dialogController, animated: true)
-                } else {
-                    print("Krivi podaci")
-                    nameTxtField.text?.removeAll()
-                    surnameTxtField.text?.removeAll()
-                    // alert da su krivi podaci
                 }
             })
     }
@@ -191,7 +239,6 @@ extension LoginViewController: UITextFieldDelegate {
         
         return (updatedText.count <= 30 && nonAlphaNumericCharacters.count == 0)
     }
-    
 }
 
 extension LoginViewController: LoginDelegate {

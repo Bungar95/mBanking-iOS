@@ -19,7 +19,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window?.rootViewController = initialViewController
         return true
     }
-    
-    
 }
-

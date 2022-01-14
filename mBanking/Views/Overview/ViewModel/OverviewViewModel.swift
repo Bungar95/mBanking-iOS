@@ -12,10 +12,11 @@ protocol OverviewViewModel: AnyObject {
     
     var loaderSubject: ReplaySubject<Bool> {get}
     var loadUserDataSubject: ReplaySubject<()> {get set}
-    var currentAccountTransactionsRelay: BehaviorRelay<[Transaction]> {get set}
+    var currentAccountTransactionsRelay: BehaviorRelay<[[Transaction]]> {get set}
     var currentAccountSubject: ReplaySubject<Account> {get set}
     
     var userAccounts: [Account] {get set}
+    var sortedGroupedTransactions: [[Transaction]] {get set}
     var userName: String {get set}
     var accountIBAN: String? {get set}
     var accountAmount: String? {get set}
@@ -27,19 +28,19 @@ protocol OverviewViewModel: AnyObject {
 }
 
 class OverviewViewModelImpl: OverviewViewModel {
-        
-    var currentAccountTransactionsRelay = BehaviorRelay<[Transaction]>.init(value: [])
+    
+    var currentAccountTransactionsRelay = BehaviorRelay<[[Transaction]]>.init(value: [])
     var loaderSubject = ReplaySubject<Bool>.create(bufferSize: 1)
     var loadUserDataSubject = ReplaySubject<()>.create(bufferSize: 1)
     var currentAccountSubject = ReplaySubject<Account>.create(bufferSize: 1)
-
+    
     var userName = UserDefaults.standard.string(forKey: "userName") ?? ""
     var accountIBAN: String?
     var accountAmount: String?
     var accountCurrency: String?
     var accountName: String?
     var userAccounts: [Account] = []
-    
+    var sortedGroupedTransactions: [[Transaction]] = []
     private let userRepository: UserRepository
     
     init(repository: UserRepository){
@@ -79,9 +80,41 @@ class OverviewViewModelImpl: OverviewViewModel {
                 self.accountAmount = nextAccount.amount
                 self.accountCurrency = nextAccount.currency
                 self.accountIBAN = nextAccount.iban
-                self.currentAccountTransactionsRelay.accept(nextAccount.transactions)
+                
+                //sorted transactions
+                let sortedTransaction = nextAccount.transactions.sorted(by:{
+                    
+                    let date0 = DateUtils.getDateOfDottedString($0.date)
+                    let date1 = DateUtils.getDateOfDottedString($1.date)
+                    
+                    return date0.compare(date1) == .orderedDescending
+                    
+                })
+                
+                //grouped transactions
+                let groupTransactionsByMonth = Dictionary(grouping: sortedTransaction) { transaction -> String in
+                   
+                    let date = DateUtils.getDateOfDottedString(transaction.date)
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyyMM"
+                    let resultDate = dateFormatter.string(from: date)
+                    
+                    return resultDate
+                    
+                }
+                
+                // when changing accounts, remove grouped transactions from previous account
+                self.sortedGroupedTransactions.removeAll()
+                
+                //sorted groups
+                let sortedKeys = groupTransactionsByMonth.keys.sorted(by: >)
+                sortedKeys.forEach{ key in
+                    if let value = groupTransactionsByMonth[key] {
+                        self.sortedGroupedTransactions.append(value)
+                    }
+                }
+                self.currentAccountTransactionsRelay.accept(self.sortedGroupedTransactions)
                 self.loaderSubject.onNext(false)
             })
     }
-
 }

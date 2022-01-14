@@ -47,13 +47,12 @@ class AccountsTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configureCell(id: String, iban: String, amount: String) {
+    func configureCell(id: String, iban: String, amount: String, currency: String) {
         
         transactionImageView.image = UIImage(named: "transaction-list")
         nameLabel.text = "Account #\(id)"
         ibanLabel.text = iban
-        amountLabel.text = amount
-        
+        amountLabel.text = "\(amount) \(currency)"
     }
 }
 
@@ -65,7 +64,6 @@ private extension AccountsTableViewCell {
         self.selectionStyle = .none
         
         contentView.addSubviews(views: transactionImageView, nameLabel, ibanLabel, amountLabel)
-        
         setupConstraints()
     }
     
@@ -78,15 +76,18 @@ private extension AccountsTableViewCell {
         
         nameLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalToSuperview().offset(10)
+            make.trailing.equalToSuperview().offset(-5)
             make.leading.equalTo(transactionImageView.snp.trailing).offset(5)
         }
         
         ibanLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(transactionImageView.snp.bottom).offset(5)
+            make.trailing.equalToSuperview().offset(-5)
             make.leading.equalToSuperview().offset(10)
         }
         
         amountLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(ibanLabel.snp.bottom).offset(5)
             make.bottom.trailing.equalToSuperview().offset(-10)
         }
     }

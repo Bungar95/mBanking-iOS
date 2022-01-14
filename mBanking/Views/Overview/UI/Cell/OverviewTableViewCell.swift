@@ -60,9 +60,9 @@ class OverviewTableViewCell: UITableViewCell {
 private extension OverviewTableViewCell {
     
     func setupUI() {
-        contentView.backgroundColor = .gray
-        self.backgroundColor = .gray
-        self.selectionStyle = .none
+        contentView.backgroundColor = .white
+        self.backgroundColor = .white
+        self.selectionStyle = .default
         
         contentView.addSubviews(views: transactionImageView, descriptionLabel, dateLabel, amountLabel)
         

@@ -8,7 +8,6 @@
 import Foundation
 import UIKit
 import RxSwift
-
 class PinDialogViewController: UIViewController {
     
     let disposeBag = DisposeBag()
@@ -28,12 +27,14 @@ class PinDialogViewController: UIViewController {
     let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Register"
+        label.font = R.font.quicksandRegular(size: 18)
         return label
     }()
     
     let pinTitleLabel: UILabel = {
         let label = UILabel()
         label.text = "Enter a new pin code"
+        label.font = R.font.quicksandRegular(size: 18)
         return label
     }()
     
@@ -45,6 +46,7 @@ class PinDialogViewController: UIViewController {
         txtField.layer.borderWidth = 1
         txtField.layer.borderColor = UIColor.black.withAlphaComponent(0.3).cgColor
         txtField.setLeftPadding(5)
+        txtField.font = R.font.quicksandRegular(size: 20)
         return txtField
     }()
     
@@ -53,7 +55,6 @@ class PinDialogViewController: UIViewController {
         view.backgroundColor = .systemGray
         view.distribution = .fillEqually
         view.axis = .vertical
-        view.spacing = 30
         return view
     }()
     
@@ -240,10 +241,10 @@ private extension PinDialogViewController {
         }
         
         verticalStackView.snp.makeConstraints{ (make) -> Void in
-            make.top.equalTo(infoContainerView.snp.bottom).offset(10)
             make.leading.equalToSuperview()
             make.trailing.equalToSuperview()
             make.bottom.equalToSuperview()
+            make.height.equalToSuperview().dividedBy(2)
         }
         
         titleLabel.snp.makeConstraints{ (make) -> Void in
@@ -305,7 +306,6 @@ private extension PinDialogViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(on: ConcurrentDispatchQueueScheduler.init(qos: .background))
             .subscribe(onNext: { [unowned self] (verification) in
-                print(verification)
                 switch verification {
                 case .login:
                     pinNumberTextField.text?.removeAll()
@@ -331,7 +331,6 @@ private extension PinDialogViewController {
                     self.delegate?.successfulLogin(true)
                 })
             })
-        
     }
     
     func minNumCheck() -> Bool {

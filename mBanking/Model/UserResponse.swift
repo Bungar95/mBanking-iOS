@@ -11,7 +11,7 @@ struct UserResponse: Codable {
     let accounts: [Account]
     
     enum CodingKeys: String, CodingKey{
-        case id = "userId" // user_id if without .convertFromSnakeCase
+        case id = "userId"
         case accounts = "acounts"
     }
 }

@@ -13,6 +13,7 @@ import RxCocoa
 class AccountsViewController: UIViewController {
     
     let disposeBag = DisposeBag()
+    weak var delegate: AccountDelegate?
     
     let dialogView: UIView = {
         let view = UIView()
@@ -52,9 +53,9 @@ class AccountsViewController: UIViewController {
 }
 
 private extension AccountsViewController {
-
+    
     func setupUI() {
-        view.backgroundColor = .black.withAlphaComponent(0.5)
+        view.backgroundColor = .black.withAlphaComponent(0.4)
         modalTransitionStyle = .crossDissolve
         
         view.addSubview(dialogView)
@@ -67,9 +68,9 @@ private extension AccountsViewController {
         
         dialogView.snp.makeConstraints{ (make) -> Void in
             make.top.equalToSuperview().offset(100)
-            make.leading.equalToSuperview().offset(50)
+            make.leading.equalToSuperview().offset(25)
             make.bottom.equalToSuperview().offset(-100)
-            make.trailing.equalToSuperview().offset(-50)
+            make.trailing.equalToSuperview().offset(-25)
         }
         
         progressView.snp.makeConstraints{ (make) -> Void in
@@ -92,10 +93,9 @@ private extension AccountsViewController {
     }
     
     func initializeVM() {
-
+        
         initializeLoaderObservable(subject: viewModel.loaderSubject).disposed(by: disposeBag)
         initializeAccountDataObservable(subject: viewModel.accountsRelay).disposed(by: disposeBag)
-//        initializeDialogDismiss(subject: viewModel.dismissSubject).disposed(by: disposeBag)
     }
     
     func initializeLoaderObservable(subject: ReplaySubject<Bool>) -> Disposable {
@@ -121,19 +121,6 @@ private extension AccountsViewController {
                 }
             })
     }
-    
-//    func initializeDialogDismiss(subject: ReplaySubject<()>) -> Disposable {
-//        return subject
-//            .observe(on: MainScheduler.instance)
-//            .subscribe(on: ConcurrentDispatchQueueScheduler.init(qos: .background))
-//            .subscribe(onNext: { [unowned self] _ in
-//                dismiss(animated: true, completion: {
-//                    self.delegate?.successfulLogin(true)
-//                })
-//            })
-//
-//    }
-    
 }
 
 extension AccountsViewController: UITableViewDataSource, UITableViewDelegate {
@@ -146,10 +133,6 @@ extension AccountsViewController: UITableViewDataSource, UITableViewDelegate {
         return 1
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
-    }
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let accountCell = tableView.dequeueReusableCell(withIdentifier: "accountsTableViewCell", for: indexPath) as? AccountsTableViewCell else {
             print("failed to dequeue the wanted cell")
@@ -158,14 +141,16 @@ extension AccountsViewController: UITableViewDataSource, UITableViewDelegate {
         
         let account = viewModel.accountsRelay.value[indexPath.row]
         
-        accountCell.configureCell(id: account.id, iban: account.iban, amount: account.amount)
-        
+        accountCell.configureCell(id: account.id, iban: account.iban, amount: account.amount, currency: account.currency)
         return accountCell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        // bring back to overview
+        let account = viewModel.accountsRelay.value[indexPath.row]
+        dismiss(animated: true, completion: {
+            self.delegate?.switchAccount(account)
+        })
     }
 }
 
@@ -181,4 +166,3 @@ extension AccountsViewController {
         progressView.stopAnimating()
     }
 }
-

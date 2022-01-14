@@ -17,6 +17,7 @@
 		9F75ED63278D90AF008986CE /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F75ED62278D90AF008986CE /* LoginViewController.swift */; };
 		9F75ED68278D90B1008986CE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9F75ED67278D90B1008986CE /* Assets.xcassets */; };
 		9F75ED6B278D90B1008986CE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9F75ED69278D90B1008986CE /* LaunchScreen.storyboard */; };
+		9F9476E627904233002CE820 /* AccountDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F9476E527904233002CE820 /* AccountDelegate.swift */; };
 		9FD4B8D0278F11AA00EB9A45 /* OverviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8CF278F11AA00EB9A45 /* OverviewViewController.swift */; };
 		9FD4B8D3278F11DD00EB9A45 /* OverviewTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8D2278F11DD00EB9A45 /* OverviewTableViewCell.swift */; };
 		9FD4B8D5278F132B00EB9A45 /* OverviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8D4278F132B00EB9A45 /* OverviewViewModel.swift */; };
@@ -31,7 +32,7 @@
 		9FD4B8EA278F4B4A00EB9A45 /* Quicksand-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9FD4B8E7278F4B4A00EB9A45 /* Quicksand-Regular.ttf */; };
 		9FD4B8EB278F4B4A00EB9A45 /* Quicksand-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9FD4B8E8278F4B4A00EB9A45 /* Quicksand-Bold.ttf */; };
 		9FD4B8ED278F4B5E00EB9A45 /* R.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8EC278F4B5E00EB9A45 /* R.generated.swift */; };
-		9FD4B8F0278F905600EB9A45 /* PushViewControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8EF278F905600EB9A45 /* PushViewControllerDelegate.swift */; };
+		9FD4B8F0278F905600EB9A45 /* LoginDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8EF278F905600EB9A45 /* LoginDelegate.swift */; };
 		9FD4B8F2278FBB0E00EB9A45 /* AccountsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8F1278FBB0E00EB9A45 /* AccountsViewController.swift */; };
 		9FD4B8F8278FBD0C00EB9A45 /* AccountsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8F7278FBD0C00EB9A45 /* AccountsTableViewCell.swift */; };
 		9FD4B8FA278FC04D00EB9A45 /* AccountsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD4B8F9278FC04D00EB9A45 /* AccountsViewModel.swift */; };
@@ -52,6 +53,7 @@
 		9F75ED67278D90B1008986CE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9F75ED6A278D90B1008986CE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9F75ED6C278D90B1008986CE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9F9476E527904233002CE820 /* AccountDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDelegate.swift; sourceTree = "<group>"; };
 		9FD4B8CF278F11AA00EB9A45 /* OverviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewViewController.swift; sourceTree = "<group>"; };
 		9FD4B8D2278F11DD00EB9A45 /* OverviewTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewTableViewCell.swift; sourceTree = "<group>"; };
 		9FD4B8D4278F132B00EB9A45 /* OverviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewViewModel.swift; sourceTree = "<group>"; };
@@ -66,7 +68,7 @@
 		9FD4B8E7278F4B4A00EB9A45 /* Quicksand-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Quicksand-Regular.ttf"; sourceTree = "<group>"; };
 		9FD4B8E8278F4B4A00EB9A45 /* Quicksand-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Quicksand-Bold.ttf"; sourceTree = "<group>"; };
 		9FD4B8EC278F4B5E00EB9A45 /* R.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = R.generated.swift; sourceTree = SOURCE_ROOT; };
-		9FD4B8EF278F905600EB9A45 /* PushViewControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushViewControllerDelegate.swift; sourceTree = "<group>"; };
+		9FD4B8EF278F905600EB9A45 /* LoginDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginDelegate.swift; sourceTree = "<group>"; };
 		9FD4B8F1278FBB0E00EB9A45 /* AccountsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsViewController.swift; sourceTree = "<group>"; };
 		9FD4B8F7278FBD0C00EB9A45 /* AccountsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsTableViewCell.swift; sourceTree = "<group>"; };
 		9FD4B8F9278FC04D00EB9A45 /* AccountsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsViewModel.swift; sourceTree = "<group>"; };
@@ -286,7 +288,8 @@
 		9FD4B8EE278F903D00EB9A45 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				9FD4B8EF278F905600EB9A45 /* PushViewControllerDelegate.swift */,
+				9FD4B8EF278F905600EB9A45 /* LoginDelegate.swift */,
+				9F9476E527904233002CE820 /* AccountDelegate.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -465,12 +468,13 @@
 			files = (
 				9FD4B8DB278F2DB900EB9A45 /* Transaction.swift in Sources */,
 				9F75ED63278D90AF008986CE /* LoginViewController.swift in Sources */,
-				9FD4B8F0278F905600EB9A45 /* PushViewControllerDelegate.swift in Sources */,
+				9FD4B8F0278F905600EB9A45 /* LoginDelegate.swift in Sources */,
 				9FD4B8E4278F30FB00EB9A45 /* UserRepository.swift in Sources */,
 				9FD4B8D9278F2A0D00EB9A45 /* Account.swift in Sources */,
 				9F6965CA278DAD3A00247F61 /* UITextField + Extension.swift in Sources */,
 				9FD4B8D0278F11AA00EB9A45 /* OverviewViewController.swift in Sources */,
 				9FD4B8ED278F4B5E00EB9A45 /* R.generated.swift in Sources */,
+				9F9476E627904233002CE820 /* AccountDelegate.swift in Sources */,
 				9FD4B8E1278F305A00EB9A45 /* DateUtil.swift in Sources */,
 				9F75ED5F278D90AF008986CE /* AppDelegate.swift in Sources */,
 				9FD4B8D3278F11DD00EB9A45 /* OverviewTableViewCell.swift in Sources */,

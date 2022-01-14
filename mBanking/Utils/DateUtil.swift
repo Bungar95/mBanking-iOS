@@ -8,25 +8,14 @@
 import Foundation
 public class DateUtils {
     
-    static let dobTimeFormatter: DateFormatter = {
+    static let dotTimeFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd-MM-yyyy"
+        dateFormatter.dateFormat = "dd.MM.yyyy."
         return dateFormatter
     }()
     
-    static let currentTimeFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "mm:hh dd-MM-yyyy"
-        return dateFormatter
-    }()
-    
-    public static func getDateOfBirthFromTimestamp(timestamp: Int) -> String {
-        let date = Date(timeIntervalSince1970: Double(timestamp))
-        return dobTimeFormatter.string(from: date)
-    }
-    
-    public static func getCreatedAtFromTimestamp(timestamp: Int) -> String {
-        let date = Date(timeIntervalSince1970: Double(timestamp))
-        return currentTimeFormatter.string(from: date)
+    public static func getDateOfDottedString(_ string: String) -> Date {
+        guard let date = dotTimeFormatter.date(from: string) else { return Date.distantPast }
+        return date
     }
 }

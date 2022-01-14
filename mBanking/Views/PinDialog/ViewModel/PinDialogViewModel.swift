@@ -28,9 +28,9 @@ class PinDialogViewModelImpl: PinDialogViewModel {
     var userPinSubject = ReplaySubject<String>.create(bufferSize: 1)
     var pinVerificationSubject = ReplaySubject<Verification>.create(bufferSize: 1)
     var dismissSubject = ReplaySubject<()>.create(bufferSize: 1)
-
+    
     var currentSessionPinCode = ""
-
+    
     init(){
         self.userRegistered = UserDefaults.standard.bool(forKey: "userRegistered")
     }
@@ -40,7 +40,6 @@ class PinDialogViewModelImpl: PinDialogViewModel {
         disposables.append(initializeUserPinSubject(subject: userPinSubject))
         return disposables
     }
-    
 }
 
 private extension PinDialogViewModelImpl {
@@ -67,5 +66,4 @@ private extension PinDialogViewModelImpl {
         let userPinCode = UserDefaults.standard.string(forKey: "pinCode")
         return (userPinCode == currentSessionPinCode) ? .login : .failure
     }
-    
 }
