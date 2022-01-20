@@ -57,7 +57,6 @@ private extension PinDialogViewModelImpl {
                     UserDefaults.standard.setValue(true, forKey: "userRegistered")
                     self.userRegistered = true
                     self.pinVerificationSubject.onNext(.register)
-                    
                 }
             })
     }

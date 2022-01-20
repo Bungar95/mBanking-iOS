@@ -22,9 +22,11 @@ protocol OverviewViewModel: AnyObject {
     var accountAmount: String? {get set}
     var accountCurrency: String? {get set}
     var accountName: String? {get set}
+    var hiddenSections: Set<Int> {get set}
     
     func initializeViewModelObservables() -> [Disposable]
-    
+    func hideSection(_ section: Int)
+    func isSectionHidden(_ section: Int) -> Bool
 }
 
 class OverviewViewModelImpl: OverviewViewModel {
@@ -41,6 +43,7 @@ class OverviewViewModelImpl: OverviewViewModel {
     var accountName: String?
     var userAccounts: [Account] = []
     var sortedGroupedTransactions: [[Transaction]] = []
+    var hiddenSections = Set<Int>()
     private let userRepository: UserRepository
     
     init(repository: UserRepository){
@@ -116,5 +119,17 @@ class OverviewViewModelImpl: OverviewViewModel {
                 self.currentAccountTransactionsRelay.accept(self.sortedGroupedTransactions)
                 self.loaderSubject.onNext(false)
             })
+    }
+    
+    func hideSection(_ section: Int) {
+        if hiddenSections.contains(section){
+            hiddenSections.remove(section)
+        }else{
+            hiddenSections.insert(section)
+        }
+    }
+    
+    func isSectionHidden(_ section: Int) -> Bool {
+        return hiddenSections.contains(section)
     }
 }

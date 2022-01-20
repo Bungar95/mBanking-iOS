@@ -241,22 +241,63 @@ extension OverviewViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        if self.viewModel.isSectionHidden(section) {
+            return 0
+        }
+        
         return viewModel.currentAccountTransactionsRelay.value[section].count
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
+        let sectionView = UIView()
+        let sectionLabel = UILabel()
+        let sectionButton = UIButton(type: .system)
+        
+        sectionView.addSubviews(views: sectionLabel, sectionButton)
+        sectionView.backgroundColor = .systemCyan
+        sectionLabel.textColor = .white
+        sectionLabel.font = R.font.quicksandBold(size: 20)
+        sectionButton.setTitle(self.viewModel.isSectionHidden(section) ? "Expand" : "Collapse", for: .normal)
+        sectionButton.setTitleColor(.white, for: .normal)
+        sectionLabel.snp.makeConstraints{ (make) -> Void in
+            make.centerY.equalToSuperview()
+            make.leading.equalToSuperview().offset(25)
+        }
+        sectionButton.snp.makeConstraints{ (make) -> Void in
+            make.centerY.equalToSuperview()
+            make.trailing.equalToSuperview().offset(-25)
+        }
+        
         let date = DateUtils.getDateOfDottedString(viewModel.currentAccountTransactionsRelay.value[section][0].date)
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM yyyy"
         let resultDate = dateFormatter.string(from: date)
-        return resultDate
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        let header = view as! UITableViewHeaderFooterView
-        header.tintColor = .systemCyan
-        header.textLabel?.textColor = .white
-        header.textLabel?.font = R.font.quicksandBold(size: 20)
+        sectionLabel.text = resultDate
+        
+        sectionButton.rx.tap
+            .subscribe(onNext: { [unowned self] in
+                self.transactionTableView.beginUpdates()
+                var indexPaths = [IndexPath]()
+                
+                for row in viewModel.currentAccountTransactionsRelay.value[section].indices {
+                    let indexPath = IndexPath(row: row, section: section)
+                    indexPaths.append(indexPath)
+                }
+                
+                if self.viewModel.isSectionHidden(section){
+                    tableView.insertRows(at: indexPaths, with: .fade)
+                }else{
+                    tableView.deleteRows(at: indexPaths, with: .fade)
+                }
+                
+                self.viewModel.hideSection(section)
+                sectionButton.setTitle(self.viewModel.isSectionHidden(section) ? "Expand" : "Collapse", for: .normal)
+                self.transactionTableView.endUpdates()
+            }).disposed(by: disposeBag)
+        
+        return sectionView
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -282,6 +323,8 @@ extension OverviewViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        let transaction = viewModel.currentAccountTransactionsRelay.value[indexPath.section][indexPath.row]
+        print(transaction)
     }
 }
 
